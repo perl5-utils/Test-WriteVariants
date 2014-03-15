@@ -31,6 +31,10 @@ Test::WriteVariants - Dynamic generation of tests in nested combinations of cont
         output_dir => $output_dir,
     );
 
+=head1 DESCRIPTION
+
+NOTE: This is alpha code that's still evolving - nothing is stable.
+
 =cut
 
 use strict;
@@ -43,10 +47,10 @@ use File::Basename;
 use Module::Pluggable::Object;
 use Carp qw(croak confess);
 
-use Test::WriteVariants::Context qw(new_value_list);
+use Test::WriteVariants::Context;
 use Data::Tumbler;
 
-our $VERSION = '0.001';
+our $VERSION = '0.002';
 
 
 sub new {
@@ -135,20 +139,27 @@ sub find_input_test_modules {
 
     my $namespaces = delete $args{search_path}
         or croak "search_path not specified";
-    my $input_tests = delete($args{input_tests}) || {};
+    my $test_prefix = delete $args{test_prefix};
+    my $input_tests = delete $args{input_tests} || {};
     croak "find_input_test_modules: unknown arguments: @{[ keys %args ]}"
         if keys %args;
 
-    my $namespaces_regex = join "|", map { quotemeta($_) } @$namespaces;
-    my $namespaces_qr    = qr/^($namespaces_regex)::/;
+    my $edit_test_name;
+    if (defined $test_prefix) {
+        my $namespaces_regex = join "|", map { quotemeta($_) } @$namespaces;
+        my $namespaces_qr    = qr/^($namespaces_regex)::/;
+        $edit_test_name = sub { s/$namespaces_qr/$test_prefix/ };
+    }
 
     my @test_case_modules = Module::Pluggable::Object->new(
         require => 0,
         search_path => $namespaces,
     )->plugins;
 
+    #warn "find_input_test_modules @$namespaces: @test_case_modules";
+
     for my $module_name (@test_case_modules) {
-        $self->add_test_module($input_tests, $module_name, $namespaces_qr);
+        $self->add_test_module($input_tests, $module_name, $edit_test_name);
     }
 
     return $input_tests;
@@ -156,16 +167,17 @@ sub find_input_test_modules {
 
 
 sub add_test_module {
-    my ($self, $input_tests, $module_name, $namespaces_qr) = @_;
+    my ($self, $input_tests, $module_name, $edit_test_name) = @_;
 
     # map module name, without the namespace prefix, to a dir path
-    my $test_name = $module_name;
-    $test_name =~ s/$namespaces_qr//;
-    $test_name =~ s{[^\w:]+}{_}g;
-    $test_name =~ s{::}{/}g;
+    local $_ = $module_name;
+    $edit_test_name->() if $edit_test_name;
+    s{[^\w:]+}{_}g;
+    s{::}{/}g;
 
-    $self->add_test($input_tests, $test_name, {
-        module => $module_name,
+    $self->add_test($input_tests, $_, {
+        class => $module_name,
+        method => 'run_tests',
     });
 
     return;
@@ -177,7 +189,7 @@ sub add_test {
 
     confess "Can't add test $test_name because a test with that name exists"
         if $input_tests->{ $test_name };
-
+    warn "new_test($test_name): @{[ %$new_test ]}";
     $input_tests->{ $test_name } = $new_test;
     return;
 }
@@ -216,7 +228,8 @@ sub _normalize_providers {
                 for my $test_variant_module (@test_variant_modules) {
                     next unless $test_variant_module->can($method);
                     #warn "$test_variant_module $method...\n";
-                    $test_variant_module->$method($path, $context, $tests, \%variants);
+                    my $fqsn = "$test_variant_module\::$method";
+                    $self->$fqsn($path, $context, $tests, \%variants);
                     #warn "$test_variant_module $method: @{[ keys %variants ]}\n";
                 }
             }
@@ -235,14 +248,15 @@ sub write_output_files {
     my $base_dir_path = join "/", $output_dir, @$path;
 
     for my $testname (sort keys %$input_tests) {
+        my $testinfo = $input_tests->{$testname};
 
         # note that $testname can include a subdirectory path
         $testname .= ".t" unless $testname =~ m/\.t$/;
         my $full_path = "$base_dir_path/$testname";
 
         warn "Writing $full_path\n";
+        #warn "testinfo: @{[ %$testinfo ]}";
 
-        my $testinfo = $input_tests->{$testname};
         my $test_script = $self->get_test_file_body($context, $testinfo);
 
         $self->write_file($full_path, $test_script);
@@ -275,23 +289,24 @@ sub get_test_file_body {
 
     my @body;
 
-    my $prologue = $testinfo->{prologue}
-        || qq{#!perl\nuse lib "lib";\n}; # XXX remove use lib
+    push @body, $testinfo->{prologue} || qq{#!perl\n\n};
 
     push @body, $context->get_code;
+    push @body, "\n";
 
-    push @body, "use lib '$testinfo->{lib}';\n"
+    push @body, "use lib '$testinfo->{lib}';\n\n"
         if $testinfo->{lib};
 
-    push @body, "require '$testinfo->{require}';\n"
+    push @body, "require '$testinfo->{require}';\n\n"
         if $testinfo->{require};
 
-    if (my $module = $testinfo->{module}) {
-        push @body, "require $module;\n";
-        push @body, "$module->run_tests;\n";
+    if (my $class = $testinfo->{class}) {
+        push @body, "require $class;\n\n";
+        my $method = $testinfo->{method};
+        push @body, "$class->$method;\n\n" if $method;
     }
 
-    push @body, "$testinfo->{code}\n"
+    push @body, "$testinfo->{code}\n\n"
         if $testinfo->{code};
 
     return join "", @body;
