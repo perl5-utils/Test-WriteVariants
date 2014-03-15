@@ -189,7 +189,7 @@ sub add_test {
 
     confess "Can't add test $test_name because a test with that name exists"
         if $input_tests->{ $test_name };
-    warn "new_test($test_name): @{[ %$new_test ]}";
+
     $input_tests->{ $test_name } = $new_test;
     return;
 }
