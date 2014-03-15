@@ -1,0 +1,13 @@
+=head1 NAME
+
+List of significant changes to Test::WriteVariants
+
+=encoding ISO8859-1
+
+=cut
+
+=head2 Changes in Test::WriteVariants 0.001 - 15th March 2014
+
+  Initial release based on prototype in https://github.com/perl5-dbi/DBI-Test
+
+=cut

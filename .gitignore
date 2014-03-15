@@ -1,0 +1,16 @@
+.*
+!.gitignore
+!.travis.yml
+Makefile*
+!Makefile.PL
+META.*
+MYMETA.*
+blib
+build
+inc
+pm_to_blib
+MANIFEST*
+!MANIFEST.SKIP
+Test-WriteVariants-*
+nytprof*
+test-directory-*
