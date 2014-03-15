@@ -1,5 +1,38 @@
 package Test::WriteVariants;
 
+=head1 NAME
+
+Test::WriteVariants - Dynamic generation of tests in nested combinations of contexts
+
+=head1 SYNOPSIS
+
+    my $test_writer = Test::WriteVariants->new();
+
+    # gather set of input tests that we want to run in various contexts
+    # these can come from various sources, including modules and test files
+    my $input_tests = $test_writer->find_input_test_modules(
+        search_path => [ 'DBI::TestCase' ]
+    );
+
+    $test_writer->write_test_variants(
+
+        # tests we're going to run in various contexts
+        input_tests => $input_tests,
+
+        # one or more providers of variant contexts
+        # these can be code refs or plugin namespaces
+        variant_providers => [
+            "DBI::Test::VariantDBI",
+            "DBI::Test::VariantDriver",
+            "DBI::Test::VariantDBD",
+        ],
+
+        # where to generate the .t files that wrap the input_tests
+        output_dir => $output_dir,
+    );
+
+=cut
+
 use strict;
 use warnings;
 use autodie;
