@@ -50,7 +50,7 @@ use Carp qw(croak confess);
 use Test::WriteVariants::Context;
 use Data::Tumbler;
 
-our $VERSION = '0.003';
+our $VERSION = '0.004';
 
 
 sub new {
@@ -132,13 +132,14 @@ sub write_test_variants {
 
 # ------
 
-# XXX also implement a find_input_test_files - that fines .t files
+# XXX also implement a find_input_test_files - that finds .t files
 
 sub find_input_test_modules {
     my ($self, %args) = @_;
 
     my $namespaces = delete $args{search_path}
         or croak "search_path not specified";
+    my $search_dirs = delete $args{search_dirs};
     my $test_prefix = delete $args{test_prefix};
     my $input_tests = delete $args{input_tests} || {};
     croak "find_input_test_modules: unknown arguments: @{[ keys %args ]}"
@@ -154,6 +155,7 @@ sub find_input_test_modules {
     my @test_case_modules = Module::Pluggable::Object->new(
         require => 0,
         search_path => $namespaces,
+        search_dirs => $search_dirs,
     )->plugins;
 
     #warn "find_input_test_modules @$namespaces: @test_case_modules";
@@ -207,12 +209,16 @@ sub _normalize_providers {
         next if ref $provider eq 'CODE';
 
         my @test_variant_modules = Module::Pluggable::Object->new(
+            search_path => [ $provider ],
+            # for sanity:
             require => 1,
             on_require_error     => sub { croak "@_" },
             on_instantiate_error => sub { croak "@_" },
-            search_path => [ $provider ],
         )->plugins;
         @test_variant_modules = sort @test_variant_modules;
+
+        croak "No variant providers found in $provider\:: namespace"
+            unless @test_variant_modules;
 
         warn sprintf "Variant providers in %s: %s\n", $provider, join(", ", map {
             (my $n=$_) =~ s/^${provider}:://; $n

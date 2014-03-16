@@ -6,13 +6,12 @@ List of significant changes to Test::WriteVariants
 
 =cut
 
-=head2 Test::WriteVariants 0.003 - 16th March 2014
+=head2 Test::WriteVariants 0.004 - 16th March 2014
 
   Treat undef for env var as meaning 'ensure not in %ENV'.
-
-=head2 Test::WriteVariants 0.002 - 16th March 2014
-
   Add control of test_prefix plus assorted fixes.
+  Restore search_path param to find_input_test_modules().
+  Require at least one variant plugin to be found.
 
 =head2 Test::WriteVariants 0.001 - 15th March 2014
 
