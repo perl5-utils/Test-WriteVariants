@@ -134,11 +134,18 @@ sub get_meta_info  { my ($self, $name) = @_; return $self->get_var($name, $Conte
 
     sub get_code {
         my $self = shift;
-        my $perl_value = $self->quote_values_as_perl($self->{value});
-        my @lines = (
-            sprintf('$ENV{%s} = %s;', $self->{name}, $perl_value),
-            sprintf('END { delete $ENV{%s} }', $self->{name}), # for VMS
-        );
+        my $name = $self->{name};
+        my @lines;
+        if (defined $self->{value}) {
+            my $perl_value = $self->quote_values_as_perl($self->{value});
+            push @lines, sprintf('$ENV{%s} = %s;', $name, $perl_value);
+            push @lines, sprintf('END { delete $ENV{%s} }', $name); # for VMS
+        }
+        else {
+            # we treat undef to mean the ENV var should not exist in %ENV
+            push @lines, sprintf('local  $ENV{%s};', $name); # preserve old value for VMS
+            push @lines, sprintf('delete $ENV{%s};', $name); # delete from %ENV
+        }
         return join "\n", @lines, '';
     }
 }

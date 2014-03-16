@@ -50,7 +50,7 @@ use Carp qw(croak confess);
 use Test::WriteVariants::Context;
 use Data::Tumbler;
 
-our $VERSION = '0.002';
+our $VERSION = '0.003';
 
 
 sub new {
