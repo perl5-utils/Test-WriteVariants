@@ -43,5 +43,6 @@ for my $provider1 (qw(variant1a variant1b)) {
     }
 }
 
+$testdir->clean;
 
 done_testing;
