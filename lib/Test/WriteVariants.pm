@@ -16,11 +16,11 @@ Test::WriteVariants - Dynamic generation of tests in nested combinations of cont
 
     $test_writer->write_test_variants(
 
-        # tests we're going to run in various contexts
+        # tests we want to run in various contexts
         input_tests => $input_tests,
 
         # one or more providers of variant contexts
-        # these can be code refs or plugin namespaces
+        # (these can be code refs or plugin namespaces)
         variant_providers => [
             "DBI::Test::VariantDBI",
             "DBI::Test::VariantDriver",
@@ -35,22 +35,24 @@ Test::WriteVariants - Dynamic generation of tests in nested combinations of cont
 
 NOTE: This is alpha code that's still evolving - nothing is stable.
 
+See L<List::MoreUtils> for an example use.
+
 =cut
 
 use strict;
 use warnings;
-use autodie;
 
 use File::Find;
 use File::Path;
 use File::Basename;
-use Module::Pluggable::Object;
 use Carp qw(croak confess);
+
+use Module::Pluggable::Object;
 
 use Test::WriteVariants::Context;
 use Data::Tumbler;
 
-our $VERSION = '0.004';
+our $VERSION = '0.005';
 
 
 sub new {
@@ -282,14 +284,18 @@ sub write_file {
     mkpath($full_dir_path, 0)
         unless -d $full_dir_path;
 
-    open my $fh, ">", $filepath;
+    open my $fh, ">", $filepath
+        or croak "Can't write to $filepath: $!";
     print $fh $content;
-    close $fh;
+    close $fh
+        or croak "Error writing to $filepath: $!";
 
     return;
 }
 
 
+# XXX This should probably be a method call on an object
+# instanciated by the find_input_test_* methods.
 sub get_test_file_body {
     my ($self, $context, $testinfo) = @_;
 
