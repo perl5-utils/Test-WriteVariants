@@ -14,7 +14,7 @@ my %BUILD_DEPS = (
 
 my %RUN_DEPS = (
     'Data::Tumbler' => '0.002',
-    'Module::Pluggable::Object' => '4.1',
+    'Module::Pluggable::Object' => '4.9',
 );
 
 my %OPT_RUN_DEPS = (
