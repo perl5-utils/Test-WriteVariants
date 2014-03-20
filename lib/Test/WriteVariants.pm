@@ -52,7 +52,7 @@ use Module::Pluggable::Object;
 use Test::WriteVariants::Context;
 use Data::Tumbler;
 
-our $VERSION = '0.005';
+our $VERSION = '0.006';
 
 
 sub new {
