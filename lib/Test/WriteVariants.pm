@@ -113,7 +113,7 @@ use Module::Pluggable::Object;
 use Test::WriteVariants::Context;
 use Data::Tumbler;
 
-our $VERSION = '0.007';
+our $VERSION = '0.008';
 
 =head1 METHODS
 
@@ -551,3 +551,23 @@ sub get_test_file_body {
 
 
 1;
+
+__END__
+
+=head1 LICENSE
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of either:
+
+        a) the GNU General Public License as published by the Free
+        Software Foundation; either version 1, or (at your option) any
+        later version, or
+
+        b) the "Artistic License" which comes with this Kit.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See either
+the GNU General Public License or the Artistic License for more details.
+
+=cut

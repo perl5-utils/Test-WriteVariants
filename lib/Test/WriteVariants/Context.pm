@@ -1,6 +1,7 @@
 package Test::WriteVariants::Context;
 
 use strict;
+use warnings;
 
 my $ContextClass = __PACKAGE__;
 
@@ -68,6 +69,7 @@ sub get_meta_info  { my ($self, $name) = @_; return $self->get_var($name, $Conte
 {
     package Test::WriteVariants::Context::BaseItem;
     use strict;
+    use warnings;
     require Data::Dumper;
     require Carp;
 
@@ -128,6 +130,7 @@ sub get_meta_info  { my ($self, $name) = @_; return $self->get_var($name, $Conte
 {
     package Test::WriteVariants::Context::EnvVar;
     use strict;
+    use warnings;
     use parent -norequire, 'Test::WriteVariants::Context::BaseItem';
 
     # subclass representing a named environment variable
@@ -154,6 +157,7 @@ sub get_meta_info  { my ($self, $name) = @_; return $self->get_var($name, $Conte
 {
     package Test::WriteVariants::Context::OurVar;
     use strict;
+    use warnings;
     use parent -norequire, 'Test::WriteVariants::Context::BaseItem';
 
     # subclass representing a named 'our' variable
@@ -169,6 +173,7 @@ sub get_meta_info  { my ($self, $name) = @_; return $self->get_var($name, $Conte
 {
     package Test::WriteVariants::Context::ModuleUse;
     use strict;
+    use warnings;
     use parent -norequire, 'Test::WriteVariants::Context::BaseItem';
 
     # subclass representing 'use $name (@$value)'
@@ -183,6 +188,7 @@ sub get_meta_info  { my ($self, $name) = @_; return $self->get_var($name, $Conte
 {
     package Test::WriteVariants::Context::MetaInfo;
     use strict;
+    use warnings;
     use parent -norequire, 'Test::WriteVariants::Context::BaseItem';
 
     # subclass that doesn't generate any code

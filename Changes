@@ -6,6 +6,10 @@ List of significant changes to Test::WriteVariants
 
 =cut
 
+=head2 Test::WriteVariants 0.008 - 23rd March 2014
+
+  Polish up the Kwalitee of the distribution.
+
 =head2 Test::WriteVariants 0.007 - 23rd March 2014
 
   Add more documentation, including full example.
