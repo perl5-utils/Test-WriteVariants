@@ -6,6 +6,67 @@ Test::WriteVariants - Dynamic generation of tests in nested combinations of cont
 
 =head1 SYNOPSIS
 
+    use Test::WriteVariants;
+
+    my $test_writer = Test::WriteVariants->new();
+
+    $test_writer->write_test_variants(
+
+        # tests we want to run in various contexts
+        input_tests => {
+            'core/10-foo' => { require => 't/core/10-foo.t' },
+            'core/20-bar' => { require => 't/core/20-bar.t' },
+        },
+
+        # one or more providers of variant contexts
+        variant_providers => [
+            sub {
+                my ($path, $context, $tests) = @_;
+                my %variants = (
+                    plain    => $context->new_env_var(MY_MODULE_PUREPERL => 0),
+                    pureperl => $context->new_env_var(MY_MODULE_PUREPERL => 1),
+                );
+                return %variants;
+            },
+            sub {
+                my ($path, $context, $tests) = @_;
+                my %variants = map {
+                    $_ => $context->new_env_var(MY_MODULE_WIBBLE => $_),
+                } 1..3;
+                delete $variants{3} if $context->get_env_var("MY_MODULE_PUREPERL");
+                return %variants;
+            },
+        ],
+
+        # where to generate the .t files that wrap the input_tests
+        output_dir => 't/variants',
+    );
+
+When run that generates the desired test variants:
+
+    Writing t/variants/plain/1/core/10-foo.t
+    Writing t/variants/plain/1/core/20-bar.t
+    Writing t/variants/plain/2/core/10-foo.t
+    Writing t/variants/plain/2/core/20-bar.t
+    Writing t/variants/plain/3/core/10-foo.t
+    Writing t/variants/plain/3/core/20-bar.t
+    Writing t/variants/pureperl/1/core/10-foo.t
+    Writing t/variants/pureperl/1/core/20-bar.t
+    Writing t/variants/pureperl/2/core/10-foo.t
+    Writing t/variants/pureperl/2/core/20-bar.t
+
+Here's what t/variants/pureperl/2/core/20-bar.t looks like:
+
+    #!perl
+    $ENV{MY_MODULE_WIBBLE} = 2;
+    END { delete $ENV{MY_MODULE_WIBBLE} } # for VMS
+    $ENV{MY_MODULE_PUREPERL} = 1;
+    END { delete $ENV{MY_MODULE_PUREPERL} } # for VMS
+    require 't/core/20-bar.t';
+
+
+Here's an example that uses plugins to provide the tests and the variants:
+
     my $test_writer = Test::WriteVariants->new();
 
     # gather set of input tests that we want to run in various contexts
@@ -35,7 +96,7 @@ Test::WriteVariants - Dynamic generation of tests in nested combinations of cont
 
 NOTE: This is alpha code that's still evolving - nothing is stable.
 
-See L<List::MoreUtils> for an example use.
+See L<List::MoreUtils> (on github) for an example use.
 
 =cut
 
@@ -52,8 +113,17 @@ use Module::Pluggable::Object;
 use Test::WriteVariants::Context;
 use Data::Tumbler;
 
-our $VERSION = '0.006';
+our $VERSION = '0.007';
 
+=head1 METHODS
+
+=head2 new
+
+    $test_writer = Test::WriteVariants->new(%attributes);
+
+Instanciates a Test::WriteVariants instance and sets the specified attributes, if any.
+
+=cut
 
 sub new {
     my ($class, %args) = @_;
@@ -71,24 +141,68 @@ sub new {
 }
 
 
-# If the output directory already exists when tumble() is called it'll
-# throw an exception (and warn if it wasn't created during the run).
-# Setting allow_dir_overwrite true disables this safety check.
+=head2 allow_dir_overwrite
+
+    $test_writer->allow_dir_overwrite($bool);
+    $bool = $test_writer->allow_dir_overwrite;
+
+If the output directory already exists when tumble() is called it'll
+throw an exception (and warn if it wasn't created during the run).
+Setting allow_dir_overwrite true disables this safety check.
+
+=cut
+
 sub allow_dir_overwrite {
     my $self = shift;
     $self->{allow_dir_overwrite} = shift if @_;
     return $self->{allow_dir_overwrite};
 }
 
-# If the test file that's about to be written already exists
-# then write_output_files() will throw an exception.
-# Setting allow_file_overwrite true disables this safety check.
+
+=head2 allow_file_overwrite
+
+    $test_writer->allow_file_overwrite($bool);
+    $bool = $test_writer->allow_file_overwrite;
+
+If the test file that's about to be written already exists
+then write_output_files() will throw an exception.
+Setting allow_file_overwrite true disables this safety check.
+
+=cut
+
 sub allow_file_overwrite {
     my $self = shift;
     $self->{allow_file_overwrite} = shift if @_;
     return $self->{allow_file_overwrite};
 }
 
+
+=head2 write_test_variants
+
+    $test_writer->write_test_variants(
+        input_tests => \%input_tests,
+        variant_providers => \@variant_providers,
+        output_dir => $output_dir,
+    );
+
+Instanciates a L<Data::Tumbler>. Sets its C<consumer> to call:
+
+    $self->write_output_files($path, $context, $payload, $output_dir)
+
+and sets its C<add_context> to call:
+
+    $context->new($context, $item);
+
+and then calls its C<tumble> method:
+
+    $tumbler->tumble(
+        $self->normalize_providers($variant_providers),
+        [],
+        Test::WriteVariants::Context->new(),
+        $input_tests,
+    );
+
+=cut
 
 sub write_test_variants {
     my ($self, %args) = @_;
@@ -118,7 +232,7 @@ sub write_test_variants {
     );
 
     $tumbler->tumble(
-        $self->_normalize_providers($variant_providers),
+        $self->normalize_providers($variant_providers),
         [],
         Test::WriteVariants::Context->new(),
         $input_tests, # payload
@@ -135,6 +249,13 @@ sub write_test_variants {
 # ------
 
 # XXX also implement a find_input_test_files - that finds .t files
+
+=head2 find_input_test_modules
+
+    $input_tests = $test_writer->find_input_test_modules(
+    );
+
+=cut
 
 sub find_input_test_modules {
     my ($self, %args) = @_;
@@ -170,6 +291,54 @@ sub find_input_test_modules {
 }
 
 
+=head2 find_input_test_files
+
+Not yet implemented - will file .t files.
+
+=cut
+
+
+=head2 add_test
+
+    $test_writer->add_test(
+        $input_tests,   # the \%input_tests to add the test module to
+        $test_name,     # the key to use in \%input_tests
+        $test_spec      # the details of the test file
+    );
+
+Adds the $test_spec to %$input_tests keys by $test_name. In other words:
+
+    $input_tests->{ $test_name } = $test_spec;
+
+An exception will be thrown if a test with $test_name already exists
+in %$input_tests.
+
+This is a low-level interface that's not usually called directly.
+See L</add_test_module>.
+
+=cut
+
+sub add_test {
+    my ($self, $input_tests, $test_name, $test_spec) = @_;
+
+    confess "Can't add test $test_name because a test with that name exists"
+        if $input_tests->{ $test_name };
+
+    $input_tests->{ $test_name } = $test_spec;
+    return;
+}
+
+
+=head2 add_test_module
+
+    $test_writer->add_test_module(
+        $input_tests,     # the \%input_tests to add the test module to
+        $module_name,     # the package name of the test module
+        $edit_test_name   # a code ref to edit the test module name in $_
+    );
+
+=cut
+
 sub add_test_module {
     my ($self, $input_tests, $module_name, $edit_test_name) = @_;
 
@@ -188,18 +357,38 @@ sub add_test_module {
 }
 
 
-sub add_test {
-    my ($self, $input_tests, $test_name, $new_test) = @_;
+=head2 normalize_providers
 
-    confess "Can't add test $test_name because a test with that name exists"
-        if $input_tests->{ $test_name };
+    $providers = $test_writer->normalize_providers($providers);
 
-    $input_tests->{ $test_name } = $new_test;
-    return;
-}
+Given a reference to an array of providers, returns a reference to a new array.
+Any code references in the original array are passed through unchanged.
 
+Any other value is treated as a package name and passed to
+L<Module::Pluggable::Object> as a namespace C<search_path> to find plugins.
+An exception is thrown if no plugins are found.
 
-sub _normalize_providers {
+The corresponding element of the original $providers array is replaced with a
+new provider code reference which calls the C<provider_initial>, C<provider>,
+and C<provider_final> methods, if present, for each plugin namespace in turn.
+
+Normal L<Data::Tumbler> provider subroutines are called with these arguments:
+
+    ($path, $context, $tests)
+
+and the return value is expected to be a hash.  Whereas the plugin provider
+methods are called with these arguments:
+
+    ($test_writer, $path, $context, $tests, $variants)
+
+and the return value is ignored. The $variants argument is a reference to a
+hash that will be returned to Data::Tumbler and which should be edited by the
+plugin provider method. This allows a plugin to see, and change, the variants
+requested by any other plugins that have already been run for this provider.
+
+=cut
+
+sub normalize_providers {
     my ($self, $input_providers) = @_;
     my @providers = @$input_providers;
 
@@ -250,22 +439,37 @@ sub _normalize_providers {
 }
 
 
+=head2 write_output_files
+
+    $test_writer->write_output_files($path, $context, $input_tests, $output_dir);
+
+Writes test files for each test in %$input_tests, for the given $path and $context,
+into the $output_dir.
+
+The $output_dir, @$path, and key of %$input_tests are concatenated to form a
+file name. A ".t" is added if not already present.
+
+Calls L</get_test_file_body> to get the content of the test file, and then
+calls L</write_file> to write it.
+
+=cut
+
 sub write_output_files {
     my ($self, $path, $context, $input_tests, $output_dir) = @_;
 
     my $base_dir_path = join "/", $output_dir, @$path;
 
     for my $testname (sort keys %$input_tests) {
-        my $testinfo = $input_tests->{$testname};
+        my $test_spec = $input_tests->{$testname};
 
         # note that $testname can include a subdirectory path
         $testname .= ".t" unless $testname =~ m/\.t$/;
         my $full_path = "$base_dir_path/$testname";
 
         warn "Writing $full_path\n";
-        #warn "testinfo: @{[ %$testinfo ]}";
+        #warn "test_spec: @{[ %$test_spec ]}";
 
-        my $test_script = $self->get_test_file_body($context, $testinfo);
+        my $test_script = $self->get_test_file_body($context, $test_spec);
 
         $self->write_file($full_path, $test_script);
     }
@@ -273,6 +477,19 @@ sub write_output_files {
     return;
 }
 
+
+=head2 write_file
+
+    $test_writer->write_file($filepath, $content);
+
+Throws an exception if $filepath already exists and L</allow_file_overwrite> is
+not true.
+
+Creates $filepath and writes $content to it.
+Creates any directories that are needed.
+Throws an exception on error.
+
+=cut
 
 sub write_file {
     my ($self, $filepath, $content) = @_;
@@ -294,32 +511,39 @@ sub write_file {
 }
 
 
-# XXX This should probably be a method call on an object
-# instanciated by the find_input_test_* methods.
+=head2 get_test_file_body
+
+    $test_body = $test_writer->get_test_file_body($context, $test_spec);
+
+XXX This should probably be a method call on an object
+instanciated by the find_input_test_* methods.
+
+=cut
+
 sub get_test_file_body {
-    my ($self, $context, $testinfo) = @_;
+    my ($self, $context, $test_spec) = @_;
 
     my @body;
 
-    push @body, $testinfo->{prologue} || qq{#!perl\n\n};
+    push @body, $test_spec->{prologue} || qq{#!perl\n\n};
 
     push @body, $context->get_code;
     push @body, "\n";
 
-    push @body, "use lib '$testinfo->{lib}';\n\n"
-        if $testinfo->{lib};
+    push @body, "use lib '$test_spec->{lib}';\n\n"
+        if $test_spec->{lib};
 
-    push @body, "require '$testinfo->{require}';\n\n"
-        if $testinfo->{require};
+    push @body, "require '$test_spec->{require}';\n\n"
+        if $test_spec->{require};
 
-    if (my $class = $testinfo->{class}) {
+    if (my $class = $test_spec->{class}) {
         push @body, "require $class;\n\n";
-        my $method = $testinfo->{method};
+        my $method = $test_spec->{method};
         push @body, "$class->$method;\n\n" if $method;
     }
 
-    push @body, "$testinfo->{code}\n\n"
-        if $testinfo->{code};
+    push @body, "$test_spec->{code}\n\n"
+        if $test_spec->{code};
 
     return join "", @body;
 }
