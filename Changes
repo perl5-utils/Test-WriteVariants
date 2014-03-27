@@ -14,6 +14,10 @@ List of significant changes to Test::WriteVariants
 
   Add more documentation, including full example.
 
+=head2  Test::WriteVariants 0.006 - 21th March 2014
+
+  Fix CPAN permissions
+
 =head2 Test::WriteVariants 0.005 - 19th March 2014
 
   Removed use of autodie.
