@@ -32,8 +32,9 @@ WriteMakefile1(
             },
             bugtracker => {
                 web    => 'http://rt.cpan.org/Public/Dist/Display.html?Name=Test-WriteVariants',
-                mailto => 'test-writevariants@example.com',
+                mailto => 'test-writevariants@rt.cpan.org',
             },
+            license => 'http://dev.perl.org/licenses/',
         },
         prereqs => {
             develop => {
@@ -65,15 +66,15 @@ WriteMakefile1(
             },
         },
     },
-    'NAME'          => 'Test::WriteVariants',
-    'VERSION_FROM'  => 'lib/Test/WriteVariants.pm',
-    'ABSTRACT_FROM' => 'lib/Test/WriteVariants.pm',
-    'AUTHOR'        => 'Tim Bunce',
-    LICENSE         => 'perl',
-    PREREQ_PM       => \%RUN_DEPS,
-    BUILD_REQUIRES  => \%BUILD_DEPS,
-    TEST_REQUIRES   => \%TEST_DEPS,
-    test            => { TESTS => 't/*.t xt/*.t' },
+    NAME           => 'Test::WriteVariants',
+    VERSION_FROM   => 'lib/Test/WriteVariants.pm',
+    ABSTRACT_FROM  => 'lib/Test/WriteVariants.pm',
+    AUTHOR         => 'Tim Bunce',
+    LICENSE        => 'perl',
+    PREREQ_PM      => \%RUN_DEPS,
+    BUILD_REQUIRES => \%BUILD_DEPS,
+    TEST_REQUIRES  => \%TEST_DEPS,
+    test           => { TESTS => 't/*.t xt/*.t' },
 );
 
 sub WriteMakefile1
