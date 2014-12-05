@@ -1,36 +1,22 @@
-=head1 NAME
+Revision history for Perl module Test::WriteVariants
 
-List of significant changes to Test::WriteVariants
+0.008	2014-03-23
+    - Polish up the Kwalitee of the distribution.
 
-=encoding ISO8859-1
+0.007	2014-03-23
+    - Add more documentation, including full example.
 
-=cut
+0.006	2014-03-21
+    - Fix CPAN permissions
 
-=head2 Test::WriteVariants 0.008 - 23rd March 2014
+0.005	2014-03-19
+    - Removed use of autodie.
 
-  Polish up the Kwalitee of the distribution.
+0.004	2014-03-16
+    - Treat undef for env var as meaning 'ensure not in %ENV'.
+    - Add control of test_prefix plus assorted fixes.
+    - Restore search_path param to find_input_test_modules().
+    - Require at least one variant plugin to be found.
 
-=head2 Test::WriteVariants 0.007 - 23rd March 2014
-
-  Add more documentation, including full example.
-
-=head2  Test::WriteVariants 0.006 - 21th March 2014
-
-  Fix CPAN permissions
-
-=head2 Test::WriteVariants 0.005 - 19th March 2014
-
-  Removed use of autodie.
-
-=head2 Test::WriteVariants 0.004 - 16th March 2014
-
-  Treat undef for env var as meaning 'ensure not in %ENV'.
-  Add control of test_prefix plus assorted fixes.
-  Restore search_path param to find_input_test_modules().
-  Require at least one variant plugin to be found.
-
-=head2 Test::WriteVariants 0.001 - 15th March 2014
-
-  Initial release based on prototype in https://github.com/perl5-dbi/DBI-Test
-
-=cut
+0.001	2014-03-15
+    - Initial release based on prototype in https://github.com/perl5-dbi/DBI-Test
