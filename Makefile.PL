@@ -1,90 +1,119 @@
 use strict;
 use warnings;
+
 use 5.008001;
 
 use ExtUtils::MakeMaker;
 
-my $mymeta_works = eval { ExtUtils::MakeMaker->VERSION('6.5707'); 1 };
-my $mymeta = $mymeta_works || eval { ExtUtils::MakeMaker->VERSION('6.5702'); 1 };
+my %RUN_DEPS = (
+    'Data::Tumbler'             => '0.002',
+    'Module::Pluggable::Object' => '4.9',
+);
+my %CONFIGURE_DEPS = (
+    'ExtUtils::MakeMaker' => 0,
+);
+my %BUILD_DEPS = ();
 
-my %BUILD_DEPS = (
-    'Test::More' => '0.88',
+my %TEST_DEPS = (
+    'Test::More'      => '0.88',
     'Test::Directory' => '0.041',
 );
 
-my %RUN_DEPS = (
-    'Data::Tumbler' => '0.002',
-    'Module::Pluggable::Object' => '4.9',
-);
-
-my %OPT_RUN_DEPS = (
-);
-
-my %META_BITS = (
-  resources => {
-    homepage => 'https://metacpan.org/release/Test-WriteVariants',
-    repository => {
-        url  => 'git@github.com:perl5-utils/Test-WriteVariants.git',
-        web  => 'https://github.com/perl5-utils/Test-WriteVariants',
-        type => 'git',
+WriteMakefile1(
+    MIN_PERL_VERSION => '5.008001',
+    META_ADD         => {
+        'meta-spec' => { version => 2 },
+        resources   => {
+            homepage   => 'https://metacpan.org/release/Test-WriteVariants',
+            repository => {
+                url  => 'git@github.com:perl5-utils/Test-WriteVariants.git',
+                web  => 'https://github.com/perl5-utils/Test-WriteVariants',
+                type => 'git',
+            },
+            bugtracker => {
+                web    => 'http://rt.cpan.org/Public/Dist/Display.html?Name=Test-WriteVariants',
+                mailto => 'test-writevariants@example.com',
+            },
+        },
+        prereqs => {
+            develop => {
+                requires => {
+                    'Test::CPAN::Changes'                 => 0,
+                    'Test::CheckManifest'                 => 0,
+                    'Module::CPANTS::Analyse'             => '0.96',
+                    'Test::Kwalitee'                      => 0,
+                    'Test::Pod'                           => 0,
+                    'Test::Pod::Coverage'                 => 0,
+                    'Test::Pod::Spelling::CommonMistakes' => 0,
+                    'Test::Spelling'                      => 0,
+                },
+            },
+            configure => {
+                requires => {%CONFIGURE_DEPS},
+            },
+            build   => { requires => {%BUILD_DEPS} },
+            test    => { requires => {%TEST_DEPS} },
+            runtime => {
+                recommends => {
+                    'File::HomeDir'   => '0.50',
+                    'List::MoreUtils' => '0.22',
+                },
+                requires => {
+                    %RUN_DEPS,
+                    perl => '5.8.1',
+                },
+            },
+        },
     },
-    bugtracker  => {
-        web    => 'http://rt.cpan.org/Public/Dist/Display.html?Name=Test-WriteVariants',
-        mailto => 'test-writevariants@example.com',
-    },
-  },
+    'NAME'          => 'Test::WriteVariants',
+    'VERSION_FROM'  => 'lib/Test/WriteVariants.pm',
+    'ABSTRACT_FROM' => 'lib/Test/WriteVariants.pm',
+    'AUTHOR'        => 'Tim Bunce',
+    LICENSE         => 'perl',
+    PREREQ_PM       => \%RUN_DEPS,
+    BUILD_REQUIRES  => \%BUILD_DEPS,
+    TEST_REQUIRES   => \%TEST_DEPS,
+    test            => { TESTS => 't/*.t xt/*.t' },
 );
 
-my %WriteMakefileArgs = (
-  'NAME' => 'Test::WriteVariants',
-  'VERSION_FROM'  => 'lib/Test/WriteVariants.pm',
-  'ABSTRACT_FROM' => 'lib/Test/WriteVariants.pm',
-  'AUTHOR' => 'Tim Bunce',
+sub WriteMakefile1
+{    # originally written by Alexandr Ciornii, version 0.21. Added by eumm-upgrade.
+    my %params       = @_;
+    my $eumm_version = $ExtUtils::MakeMaker::VERSION;
+    $eumm_version = eval $eumm_version;
+    die "EXTRA_META is deprecated" if ( exists( $params{EXTRA_META} ) );
+    die "License not specified"    if ( !exists( $params{LICENSE} ) );
+    $params{TEST_REQUIRES}
+      and $eumm_version < 6.6303
+      and $params{BUILD_REQUIRES} =
+      $params{BUILD_REQUIRES} ? { %{ $params{BUILD_REQUIRES} }, %{ $params{TEST_REQUIRES} } } : delete $params{TEST_REQUIRES};
+    #EUMM 6.5502 has problems with BUILD_REQUIRES
+    $params{BUILD_REQUIRES}
+      and $eumm_version < 6.5503
+      and $params{PREREQ_PM} = { %{ $params{PREREQ_PM} || {} }, %{ delete $params{BUILD_REQUIRES} } };
+    delete $params{CONFIGURE_REQUIRES}    if ( $eumm_version < 6.52 );
+    delete $params{MIN_PERL_VERSION}      if ( $eumm_version < 6.48 );
+    delete $params{META_MERGE}            if ( $eumm_version < 6.46 );
+    delete $params{META_ADD}{prereqs}     if ( $eumm_version < 6.58 );
+    delete $params{META_ADD}{'meta-spec'} if ( $eumm_version < 6.58 );
+    delete $params{META_ADD}              if ( $eumm_version < 6.46 );
+    delete $params{LICENSE}               if ( $eumm_version < 6.31 );
+    delete $params{AUTHOR}                if ( $] < 5.005 );
+    delete $params{ABSTRACT_FROM}         if ( $] < 5.005 );
+    delete $params{BINARY_LOCATION}       if ( $] < 5.005 );
 
-  'PREREQ_PM' => {
-    %RUN_DEPS, %OPT_RUN_DEPS,
-    $mymeta_works ? () : (%BUILD_DEPS),
-  },
-
-  $mymeta_works
-    ? ( # BUILD_REQUIRES makes MYMETA right, requires stops META being wrong
-      'BUILD_REQUIRES' => \%BUILD_DEPS,
-      'META_ADD' => {
-        %META_BITS,
-        requires => \%RUN_DEPS,
-      },
-    )
-    : ( # META_ADD both to get META right - only Makefile written
-      'META_ADD' => {
-        %META_BITS,
-        requires => \%RUN_DEPS,
-        build_requires => \%BUILD_DEPS,
-      },
-    )
-  ,
-
-  ($mymeta and !$mymeta_works) ? ( 'NO_MYMETA' => 1 ) : (),
-
-  'LICENSE' => 'perl',
-);
-
-
-unless ( eval { ExtUtils::MakeMaker->VERSION('6.56') } ) {
-  my $br = delete $WriteMakefileArgs{BUILD_REQUIRES};
-  my $pp = $WriteMakefileArgs{PREREQ_PM};
-  for my $mod ( keys %$br ) {
-    if ( exists $pp->{$mod} ) {
-      $pp->{$mod} = $br->{$mod} if $br->{$mod} > $pp->{$mod};
+    # more or less taken from Moose' Makefile.PL
+    if ( $params{CONFLICTS} )
+    {
+        my $ok = CheckConflicts(%params);
+        exit(0) if ( $params{PREREQ_FATAL} and not $ok );
+        my $cpan_smoker = grep { $_ =~ m/(?:CR_SMOKER|CPAN_REPORTER|AUTOMATED_TESTING)/ } keys %ENV;
+        unless ( $cpan_smoker || $ENV{PERL_MM_USE_DEFAULT} )
+        {
+            sleep 4 unless ($ok);
+        }
+        delete $params{CONFLICTS};
     }
-    else {
-      $pp->{$mod} = $br->{$mod};
-    }
-  }
+
+    WriteMakefile(%params);
 }
-
-delete $WriteMakefileArgs{CONFIGURE_REQUIRES}
-  unless eval { ExtUtils::MakeMaker->VERSION('6.52') };
-
-WriteMakefile(%WriteMakefileArgs);
-
-exit 0;
