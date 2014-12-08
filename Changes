@@ -1,7 +1,10 @@
 Revision history for Perl module Test::WriteVariants
 
 0.008	2014-03-23
-    - Polish up the Kwalitee of the distribution.
+    - Polish up the Kwalitee of the distribution
+    - add rough description for public context methods
+    - rewrite Changes according to CPAN::Changes::Spec
+    - deploy correct license texts
 
 0.007	2014-03-23
     - Add more documentation, including full example.
