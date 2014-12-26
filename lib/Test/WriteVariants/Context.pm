@@ -203,7 +203,7 @@ sub get_meta_info  { my ($self, $name) = @_; return $self->get_var($name, $Conte
     package Test::WriteVariants::Context::EnvVar;
     use strict;
     use warnings;
-    use parent -norequire, 'Test::WriteVariants::Context::BaseItem';
+    use base 'Test::WriteVariants::Context::BaseItem';
 
     # subclass representing a named environment variable
 
@@ -230,7 +230,7 @@ sub get_meta_info  { my ($self, $name) = @_; return $self->get_var($name, $Conte
     package Test::WriteVariants::Context::OurVar;
     use strict;
     use warnings;
-    use parent -norequire, 'Test::WriteVariants::Context::BaseItem';
+    use base 'Test::WriteVariants::Context::BaseItem';
 
     # subclass representing a named 'our' variable
 
@@ -246,7 +246,7 @@ sub get_meta_info  { my ($self, $name) = @_; return $self->get_var($name, $Conte
     package Test::WriteVariants::Context::ModuleUse;
     use strict;
     use warnings;
-    use parent -norequire, 'Test::WriteVariants::Context::BaseItem';
+    use base 'Test::WriteVariants::Context::BaseItem';
 
     # subclass representing 'use $name (@$value)'
 
@@ -261,7 +261,7 @@ sub get_meta_info  { my ($self, $name) = @_; return $self->get_var($name, $Conte
     package Test::WriteVariants::Context::MetaInfo;
     use strict;
     use warnings;
-    use parent -norequire, 'Test::WriteVariants::Context::BaseItem';
+    use base 'Test::WriteVariants::Context::BaseItem';
 
     # subclass that doesn't generate any code
     # It's just used to convey information between plugins
