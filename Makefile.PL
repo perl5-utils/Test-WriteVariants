@@ -8,6 +8,7 @@ use ExtUtils::MakeMaker;
 my %RUN_DEPS = (
     'Data::Tumbler'             => '0.002',
     'Module::Pluggable::Object' => '4.9',
+    'base'                      => 0,
 );
 my %CONFIGURE_DEPS = (
     'ExtUtils::MakeMaker' => 0,
