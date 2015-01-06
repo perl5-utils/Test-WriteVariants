@@ -16,8 +16,9 @@ my %CONFIGURE_DEPS = (
 my %BUILD_DEPS = ();
 
 my %TEST_DEPS = (
-    'Test::More'      => '0.88',
     'Test::Directory' => '0.041',
+    'Test::More'      => '0.88',
+    'Test::Most'      => 0,
 );
 
 WriteMakefile1(

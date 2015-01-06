@@ -1,5 +1,9 @@
 Revision history for Perl module Test::WriteVariants
 
+0.011	2015
+    - add test-dependency for Test::Most (RT#101346 - thanks to Phillip
+      Moore for reporting)
+
 0.010	2014-12-26
     - reflect rt#100805 recommendation in LICENSE
     - use base instead of parent - because 5.6 comes with base
