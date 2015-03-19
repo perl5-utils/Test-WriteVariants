@@ -1,7 +1,7 @@
 use strict;
 use warnings;
 
-use 5.008001;
+use 5.006;
 
 use ExtUtils::MakeMaker;
 
@@ -22,19 +22,19 @@ my %TEST_DEPS = (
 );
 
 WriteMakefile1(
-    MIN_PERL_VERSION => '5.008001',
+    MIN_PERL_VERSION => '5.006',
     META_ADD         => {
         'meta-spec' => { version => 2 },
         resources   => {
             homepage   => 'https://metacpan.org/release/Test-WriteVariants',
             repository => {
-                url  => 'git@github.com:perl5-utils/Test-WriteVariants.git',
+                url  => 'https://github.com:perl5-utils/Test-WriteVariants.git',
                 web  => 'https://github.com/perl5-utils/Test-WriteVariants',
                 type => 'git',
             },
             bugtracker => {
                 web    => 'http://rt.cpan.org/Public/Dist/Display.html?Name=Test-WriteVariants',
-                mailto => 'test-writevariants@rt.cpan.org',
+                mailto => 'bug-Test-WriteVariants@rt.cpan.org',
             },
             license => 'http://dev.perl.org/licenses/',
         },
@@ -57,26 +57,20 @@ WriteMakefile1(
             build   => { requires => {%BUILD_DEPS} },
             test    => { requires => {%TEST_DEPS} },
             runtime => {
-                recommends => {
-                    'File::HomeDir'   => '0.50',
-                    'List::MoreUtils' => '0.22',
-                },
-                requires => {
-                    %RUN_DEPS,
-                    perl => '5.8.1',
-                },
+                requires => { %RUN_DEPS, },
             },
         },
     },
-    NAME           => 'Test::WriteVariants',
-    VERSION_FROM   => 'lib/Test/WriteVariants.pm',
-    ABSTRACT_FROM  => 'lib/Test/WriteVariants.pm',
-    AUTHOR         => 'Tim Bunce',
-    LICENSE        => 'perl',
-    PREREQ_PM      => \%RUN_DEPS,
-    BUILD_REQUIRES => \%BUILD_DEPS,
-    TEST_REQUIRES  => \%TEST_DEPS,
-    test           => { TESTS => 't/*.t xt/*.t' },
+    NAME               => 'Test::WriteVariants',
+    VERSION_FROM       => 'lib/Test/WriteVariants.pm',
+    ABSTRACT_FROM      => 'lib/Test/WriteVariants.pm',
+    AUTHOR             => 'Tim Bunce',
+    LICENSE            => 'perl',
+    CONFIGURE_REQUIRES => \%CONFIGURE_DEPS,
+    PREREQ_PM          => \%RUN_DEPS,
+    BUILD_REQUIRES     => \%BUILD_DEPS,
+    TEST_REQUIRES      => \%TEST_DEPS,
+    test               => { TESTS => 't/*.t xt/*.t' },
 );
 
 sub WriteMakefile1
@@ -88,12 +82,15 @@ sub WriteMakefile1
     die "License not specified"    if ( !exists( $params{LICENSE} ) );
     $params{TEST_REQUIRES}
       and $eumm_version < 6.6303
-      and $params{BUILD_REQUIRES} =
-      $params{BUILD_REQUIRES} ? { %{ $params{BUILD_REQUIRES} }, %{ $params{TEST_REQUIRES} } } : delete $params{TEST_REQUIRES};
+      and $params{BUILD_REQUIRES} = { %{ $params{BUILD_REQUIRES} || {} }, %{ delete $params{TEST_REQUIRES} } };
     #EUMM 6.5502 has problems with BUILD_REQUIRES
     $params{BUILD_REQUIRES}
       and $eumm_version < 6.5503
       and $params{PREREQ_PM} = { %{ $params{PREREQ_PM} || {} }, %{ delete $params{BUILD_REQUIRES} } };
+    ref $params{AUTHOR}
+      and "ARRAY" eq ref $params{AUTHOR}
+      and $eumm_version < 6.5702
+      and $params{AUTHOR} = join( ", ", @{ $params{AUTHOR} } );
     delete $params{CONFIGURE_REQUIRES}    if ( $eumm_version < 6.52 );
     delete $params{MIN_PERL_VERSION}      if ( $eumm_version < 6.48 );
     delete $params{META_MERGE}            if ( $eumm_version < 6.46 );
