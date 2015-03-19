@@ -103,7 +103,6 @@ See L<List::MoreUtils> (on github) for an example use.
 use strict;
 use warnings;
 
-use File::Find;
 use File::Path;
 use File::Basename;
 use Carp qw(croak confess);
@@ -553,6 +552,55 @@ sub get_test_file_body {
 1;
 
 __END__
+
+=head1 BUGS
+
+Please report any bugs or feature requests to
+C<bug-Test-WriteVariants at rt.cpan.org>, or through the web interface at
+L<http://rt.cpan.org/NoAuth/ReportBug.html?Queue=Test-WriteVariants>.
+I will be notified, and then you'll automatically be notified of progress
+on your bug as I make changes.
+
+=head1 SUPPORT
+
+You can find documentation for this module with the perldoc command.
+
+    perldoc Test::WriteVariants
+
+You can also look for information at:
+
+=over 4
+
+=item * RT: CPAN's request tracker
+
+L<http://rt.cpan.org/NoAuth/Bugs.html?Dist=Test-WriteVariants>
+
+=item * AnnoCPAN: Annotated CPAN documentation
+
+L<http://annocpan.org/dist/Test-WriteVariants>
+
+=item * CPAN Ratings
+
+L<http://cpanratings.perl.org/d/Test-WriteVariants>
+
+=item * Search CPAN
+
+L<http://search.cpan.org/dist/Test-WriteVariants/>
+
+=back
+
+=head1 AUTHOR
+
+Tim Bunce, C<< <timb at cpan.org> >>
+
+=head1 ACKNOWLEDGEMENTS
+
+This module has been created to support DBI::Test in design and separation
+of concerns.
+
+=head1 COPYRIGHT
+
+Copyright 2014-2015 Tim Bunce and Perl5 DBI Team.
 
 =head1 LICENSE
 

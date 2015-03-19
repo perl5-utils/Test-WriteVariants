@@ -271,6 +271,15 @@ sub get_meta_info  { my ($self, $name) = @_; return $self->get_var($name, $Conte
 
 __END__
 
+=head1 ACKNOWLEDGEMENTS
+
+This module has been created to support DBI::Test in design and separation
+of concerns.
+
+=head1 COPYRIGHT
+
+Copyright 2014-2015 Tim Bunce and Perl5 DBI Team.
+
 =head1 LICENSE
 
 This program is free software; you can redistribute it and/or modify
