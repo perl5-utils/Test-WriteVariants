@@ -1,8 +1,11 @@
 Revision history for Perl module Test::WriteVariants
 
-0.011	2015
+0.011_001	2015-03-19
     - add test-dependency for Test::Most (RT#101346 - thanks to Phillip
       Moore for reporting)
+    - fix meta-data and copy'n'paste errors in Makefile.PL
+    - add sections in POD for Author, Copyright, Bug-Address etc.
+    - relax minimum perl to 5.6
 
 0.010	2014-12-26
     - reflect rt#100805 recommendation in LICENSE
