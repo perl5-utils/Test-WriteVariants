@@ -112,7 +112,7 @@ use Module::Pluggable::Object;
 use Test::WriteVariants::Context;
 use Data::Tumbler;
 
-our $VERSION = '0.011';
+our $VERSION = '0.011_001';
 
 =head1 METHODS
 
