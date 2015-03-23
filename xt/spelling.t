@@ -15,3 +15,13 @@ add_stopwords(<DATA>);
 all_pod_files_spelling_ok();
 
 __END__
+AnnoCPAN
+Instanciates
+MERCHANTABILITY
+instanciated
+EnvVar
+MERCHANTABILITY
+MetaInfo
+ModuleUse
+OurVar
+env

@@ -9,15 +9,15 @@ Test::WriteVariants::Context - representation of test context
 
 =head1 DESCRIPTION
 
-Contexts are used to abstract eg. ambience or relations between
+Contexts are used to abstract e.g. ambience or relations between
 opportunities and and their application.
 
 =head1 METHODS
 
 =head2 new
 
-A Context is an ordered list of various kinds of named values (such as env
-vars, our vars) possibly including other Context objects.
+A Context is an ordered list of various kinds of named values (such as
+environment variables, our vars) possibly including other Context objects.
 
 Values can be looked up by name. The first match will be returned.
 
