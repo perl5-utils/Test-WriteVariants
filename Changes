@@ -1,5 +1,9 @@
 Revision history for Perl module Test::WriteVariants
 
+0.012	2015-03-27
+    - fix spelling (and stopwords in author tests)
+    - release 0.011_001
+
 0.011_001	2015-03-19
     - add test-dependency for Test::Most (RT#101346 - thanks to Phillip
       Moore for reporting)
