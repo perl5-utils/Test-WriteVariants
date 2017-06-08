@@ -8,6 +8,7 @@ use ExtUtils::MakeMaker;
 my %RUN_DEPS = (
     'Data::Tumbler'             => '0.002',
     'Module::Pluggable::Object' => '4.9',
+    'Module::Runtime'           => 0,
     'base'                      => 0,
 );
 my %CONFIGURE_DEPS = (
@@ -57,7 +58,9 @@ WriteMakefile1(
             build   => { requires => {%BUILD_DEPS} },
             test    => { requires => {%TEST_DEPS} },
             runtime => {
-                requires => { %RUN_DEPS, },
+                requires =>   { %RUN_DEPS, },
+		recommends => { 'File::Find::Rule' => '0.34' },
+		suggests   => { 'File::Slurper' => '0.006' }
             },
         },
     },

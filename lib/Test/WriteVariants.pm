@@ -103,14 +103,31 @@ See L<List::MoreUtils> (on github) for an example use.
 use strict;
 use warnings;
 
-use File::Path;
-use File::Basename;
 use Carp qw(croak confess);
+use Cwd ();
+use File::Basename;
+use File::Path;
+use File::Spec;
 
 use Module::Pluggable::Object;
+use Module::Runtime qw(require_module use_module);
 
 use Test::WriteVariants::Context;
 use Data::Tumbler;
+
+my $slurper;
+
+BEGIN {
+    $slurper ||= eval { require_module("File::Slurper"); File::Slurper->can("read_binary"); };
+    $slurper ||= sub {
+        my $fn = shift;
+        open( my $fh, "<", $fn ) or croak("Can't open '$fn': $!");
+        local $/;
+        my $cnt = <$fh>;
+        close($fh) or croak("Can't close file-handle for '$fn': $!");
+        return $cnt;
+    };
+}
 
 our $VERSION = '0.013';
 
@@ -252,6 +269,10 @@ sub write_test_variants {
 =head2 find_input_test_modules
 
     $input_tests = $test_writer->find_input_test_modules(
+        search_path => ["Helper"],
+        search_dirs => "t/lib",
+        test_prefix => "Extra::Helper",
+        input_tests => $input_tests
     );
 
 =cut
@@ -280,8 +301,6 @@ sub find_input_test_modules {
         search_dirs => $search_dirs,
     )->plugins;
 
-    #warn "find_input_test_modules @$namespaces: @test_case_modules";
-
     for my $module_name (@test_case_modules) {
         $self->add_test_module($input_tests, $module_name, $edit_test_name);
     }
@@ -296,6 +315,53 @@ Not yet implemented - will file .t files.
 
 =cut
 
+=head2 find_input_inline_tests
+
+    $input_tests = $test_writer->find_input_inline_tests(
+        search_patterns => ["*.it"],
+        search_dirs     => "t/inl",
+        input_tests     => $input_tests
+    );
+
+=cut
+
+sub find_input_inline_tests {
+    my ($self, %args) = @_;
+
+    my $search_patterns = delete $args{search_patterns};
+    my $search_dirs     = delete $args{search_dirs};
+    my $input_tests     = delete $args{input_tests} || {};
+    croak "find_input_test_modules: unknown arguments: @{[ keys %args ]}"
+        if keys %args;
+
+    use_module("File::Find::Rule", "0.34");
+
+    $search_patterns ||= [ "*.it" ];
+    $search_patterns = [ $search_patterns ] unless ref $search_patterns and "ARRAY" eq ref $search_patterns;
+    $search_dirs = [ $search_dirs ] unless ref $search_dirs and "ARRAY" eq ref $search_dirs;
+    $search_dirs = [ map { Cwd::abs_path($_) } @$search_dirs ];
+
+    my $path_rx_str = join( '|', map { "\Q$_\E" } @$search_dirs );
+
+    my $edit_test_name = sub {
+        my ($name,$path,$suffix) = fileparse(Cwd::abs_path($_), qr/\.[^.]*/);
+        (undef,$path,undef) = File::Spec->splitpath($path, 1);
+        $path =~ s,^$path_rx_str/,,;
+        $_ = join("_", File::Spec->splitdir($path), $name);
+    };
+
+    my @test_inlines = File::Find::Rule::find(
+        file      =>
+        canonpath =>
+        name      => [ @{$search_patterns} ]
+    )->in(@{$search_dirs});
+
+    for my $file_name (@test_inlines) {
+        $self->add_test_inline($input_tests, $file_name, $edit_test_name);
+    }
+
+    return $input_tests;
+}
 
 =head2 add_test
 
@@ -355,6 +421,29 @@ sub add_test_module {
     return;
 }
 
+=head2 add_test_inline
+
+    $test_writer->add_test_inline(
+        $input_tests,     # the \%input_tests to add the test module to
+        $file_name,       # the file name of the test code to inline
+        $edit_test_name   # a code ref to edit the test file name in $_
+    );
+
+=cut
+
+sub add_test_inline {
+    my ($self, $input_tests, $file_name, $edit_test_name) = @_;
+
+    # map module name, without the namespace prefix, to a dir path
+    local $_ = $file_name;
+    $edit_test_name->() if $edit_test_name;
+
+    $self->add_test($input_tests, $_, {
+        code => $slurper->($file_name),
+    });
+
+    return;
+}
 
 =head2 normalize_providers
 
