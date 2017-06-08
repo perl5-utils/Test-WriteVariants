@@ -3,10 +3,9 @@ use warnings;
 use strict;
 
 use Test::Most;
+use Test::Directory;
 
 use Test::WriteVariants;
-
-use Test::Directory;
 
 my $testdir = Test::Directory->new(undef);
 $testdir->clean;
