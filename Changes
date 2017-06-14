@@ -1,6 +1,6 @@
 Revision history for Perl module Test::WriteVariants
 
-0.013   2017-06-08
+0.013   2017-06-14
     - improve tests
     - add find_input_inline_tests and companion add_test_inline
 
