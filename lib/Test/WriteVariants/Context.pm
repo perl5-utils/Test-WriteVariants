@@ -296,7 +296,7 @@ of concerns.
 
 =head1 COPYRIGHT
 
-Copyright 2014-2015 Tim Bunce and Perl5 DBI Team.
+Copyright 2014-2017 Tim Bunce and Perl5 DBI Team.
 
 =head1 LICENSE
 

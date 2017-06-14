@@ -707,6 +707,8 @@ L<http://search.cpan.org/dist/Test-WriteVariants/>
 
 Tim Bunce, C<< <timb at cpan.org> >>
 
+Jens Rehsack, C<< rehsack at cpan.org >>
+
 =head1 ACKNOWLEDGEMENTS
 
 This module has been created to support DBI::Test in design and separation
@@ -714,7 +716,7 @@ of concerns.
 
 =head1 COPYRIGHT
 
-Copyright 2014-2015 Tim Bunce and Perl5 DBI Team.
+Copyright 2014-2017 Tim Bunce and Perl5 DBI Team.
 
 =head1 LICENSE
 
