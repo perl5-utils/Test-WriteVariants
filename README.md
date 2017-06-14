@@ -91,9 +91,13 @@ Here's an example that uses plugins to provide the tests and the variants:
 
 # DESCRIPTION
 
-NOTE: This is alpha code that's still evolving - nothing is stable.
+Test::WriteVariants is a utility to create variants of a common test.
 
-See [List::MoreUtils](https://metacpan.org/pod/List::MoreUtils) (on github) for an example use.
+Given the situation - like in [DBI](https://metacpan.org/pod/DBI) where some tests are the same for
+[DBI::SQL::Nano](https://metacpan.org/pod/DBI::SQL::Nano) and it's drop-in replacement [SQL::Statement](https://metacpan.org/pod/SQL::Statement).
+Or a distribution duo having a Pure-Perl and an XS variant - and the
+same test shall be used to ensure XS and PP version are really drop-in
+replacements for each other.
 
 # METHODS
 
@@ -162,9 +166,9 @@ Not yet implemented - will file .t files.
 ## find\_input\_inline\_tests
 
     $input_tests = $test_writer->find_input_inline_tests(
-        search_pattern => ["*.it"],
-        search_dirs => "t/inl",
-        input_tests => $input_tests
+        search_patterns => ["*.it"],
+        search_dirs     => "t/inl",
+        input_tests     => $input_tests
     );
 
 ## add\_test
@@ -297,6 +301,8 @@ You can also look for information at:
 
 Tim Bunce, `<timb at cpan.org>`
 
+Jens Rehsack, `rehsack at cpan.org`
+
 # ACKNOWLEDGEMENTS
 
 This module has been created to support DBI::Test in design and separation
@@ -304,7 +310,7 @@ of concerns.
 
 # COPYRIGHT
 
-Copyright 2014-2015 Tim Bunce and Perl5 DBI Team.
+Copyright 2014-2017 Tim Bunce and Perl5 DBI Team.
 
 # LICENSE
 
