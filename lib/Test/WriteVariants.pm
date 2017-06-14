@@ -94,9 +94,13 @@ Here's an example that uses plugins to provide the tests and the variants:
 
 =head1 DESCRIPTION
 
-NOTE: This is alpha code that's still evolving - nothing is stable.
+Test::WriteVariants is a utility to create variants of a common test.
 
-See L<List::MoreUtils> (on github) for an example use.
+Given the situation - like in L<DBI> where some tests are the same for
+L<DBI::SQL::Nano> and it's drop-in replacement L<SQL::Statement>.
+Or a distribution duo having a Pure-Perl and an XS variant - and the
+same test shall be used to ensure XS and PP version are really drop-in
+replacements for each other.
 
 =cut
 
